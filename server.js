@@ -1,29 +1,29 @@
 let WebSocketServer = new require('ws');
-
-// подключенные клиенты
 let clients = {};
+let id = 0;
 
-// WebSocket-сервер на порту 8081
-let webSocketServer = new WebSocketServer.Server({
-  port: 8081
+let socketServer = new WebSocketServer.Server({
+    port: 8081
 });
 
-webSocketServer.on('connection', function(ws) {
-  let nickname = ws.protocol;
-  clients[ws.protocol] = ws;
-  console.log("новое соединение " + ws.protocol);
+socketServer.on('connection', connection => {
+    let clientId = ++id;
+    let clientNickname = connection.protocol;
+    clients[clientId] = connection;
+    console.log(`${clientNickname} connected and get ID ${clientId}`);
 
-  ws.on('message', function(message) {
-    console.log('получено сообщение ' + message);
+    connection.on('message', message => {
+        let stringMessage = JSON.parse(message).message;
+        console.log(`Received message: ${stringMessage}`);
 
-    for (var key in clients) {
-      clients[key].send(message);
-    }
-  });
+        for (let id in clients) {
+            clients[id].send(message);
+        }
+    });
 
-  ws.on('close', function() {
-    console.log('соединение закрыто ' + nickname);
-    delete clients[nickname];
-  });
 
+    connection.on('close', () => {
+        console.log(`User ${clientNickname} with id ${clientId} went offline`);
+        delete clients[clientId];
+    });
 });
