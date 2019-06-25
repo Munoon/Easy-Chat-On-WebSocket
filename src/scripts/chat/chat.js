@@ -19,7 +19,9 @@ export class Chat {
             .addEventListener('click', e => {
                 let message = document.getElementById('message').value;
                 this._websocket.sendMessage(message);
-            })
+            });
+
+        this._messages = document.getElementById('messages');
     }
 
     _initChat() {
@@ -32,6 +34,8 @@ export class Chat {
                                         <input type="text" id="message">
                                         <button id="messageButton">Send Message</button>
                                     </div>
+                                    <div id="messages">
+                                    </div>
                                 `;
     }
 
@@ -43,6 +47,20 @@ export class Chat {
             },
             onMessage: message => {
                 console.log(message);
+                let messageElement = document.createElement('div');
+                messageElement.classList.add('container');
+                messageElement.innerHTML = `
+                                                <div class="card">
+                                                    <div class="card-header">${message.author}</div>
+                                                    <div class="card-body">
+                                                    <blockquote class="blockquote mb-0">
+                                                        <p>${message.message}</p>
+                                                        <footer class="blockquote-footer">${message.date}</footer>
+                                                    </blockquote>
+                                                    </div>
+                                                </div>
+                                            `;
+                this._messages.append(messageElement);
             }
         })
     }

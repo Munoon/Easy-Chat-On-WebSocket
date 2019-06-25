@@ -5,18 +5,6 @@ export class Message {
         this.date = date;
     }
 
-    getAuthor() {
-        return this.author;
-    }
-
-    getMessage() {
-        return this.message;
-    }
-
-    getDate() {
-        return this.date;
-    }
-
     convertToJson() {
         return JSON.stringify(this);
     }
