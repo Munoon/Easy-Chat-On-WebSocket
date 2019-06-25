@@ -1,0 +1,15 @@
+.title {
+    margin-left: 10px;
+}
+
+nav {
+    background-color: blue;
+}
+
+.modal.open {
+    z-index: 1003;
+    display: block;
+    opacity: 1;
+    top: 30%;
+    transform: scaleX(1) scaleY(1);
+}

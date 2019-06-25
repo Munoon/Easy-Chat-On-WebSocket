@@ -1,19 +1,14 @@
 import { WebSocketChat } from "./websocket.js";
 
 export class Chat {
-    constructor({ element, url }) {
+    constructor({ element, url, nickname }) {
         this.element = element;
         this.url = url;
-        this.nickname = undefined;
+        this._nickname = nickname;
         this._websocket = new WebSocketChat(this.url);
 
+        this._createConnection();
         this._initChat();
-
-        document.getElementById('connectButton')
-            .addEventListener('click', e => {
-                this.nickname = document.getElementById('nickname').value;
-                this._createConnection();
-            });
 
         document.getElementById('messageButton')
             .addEventListener('click', e => {
@@ -27,15 +22,10 @@ export class Chat {
     _initChat() {
         this.element.innerHTML = `
                                     <div>
-                                        <input type="text" id="nickname">
-                                        <button id="connectButton">Connect</button>
-                                    </div>
-                                    <div>
                                         <input type="text" id="message">
                                         <button id="messageButton">Send Message</button>
                                     </div>
-                                    <div id="messages">
-                                    </div>
+                                    <div id="messages"></div>
                                 `;
     }
 
@@ -55,7 +45,7 @@ export class Chat {
                                                     <div class="card-body">
                                                     <blockquote class="blockquote mb-0">
                                                         <p>${message.message}</p>
-                                                        <footer class="blockquote-footer">${message.date}</footer>
+                                                        <footer class="blockquote-footer" style="content: none">${message.date}</footer>
                                                     </blockquote>
                                                     </div>
                                                 </div>
