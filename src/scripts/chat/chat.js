@@ -21,36 +21,36 @@ export class Chat {
 
     _initChat() {
         this.element.innerHTML = `
-                                    <div>
-                                        <input type="text" id="message">
-                                        <button id="messageButton">Send Message</button>
+                                    <div class="container">
+                                        <ul id="messages" class="collection"></ul>
+
+                                        <div class="row">
+                                            <div class="input-field col s6">
+                                                <input placeholder="Message" id="message" type="text" class="validate"><br>
+                                                <a id="messageButton" class="waves-effect waves-light btn">Send</a>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div id="messages"></div>
                                 `;
     }
 
     _createConnection() {
         this._websocket.connect({
-            nickname: this.nickname,
+            nickname: this._nickname,
             onOpen: () => {
                 console.log('Connected succesfull!');
             },
             onMessage: message => {
-                console.log(message);
-                let messageElement = document.createElement('div');
-                messageElement.classList.add('container');
+                let messageElement = document.createElement('li');
+                let assignClass = message.author === this._nickname ? 'left-align' : 'right-align';
+                messageElement.classList.add('collection-item', assignClass);
                 messageElement.innerHTML = `
-                                                <div class="card">
-                                                    <div class="card-header">${message.author}</div>
-                                                    <div class="card-body">
-                                                    <blockquote class="blockquote mb-0">
-                                                        <p>${message.message}</p>
-                                                        <footer class="blockquote-footer" style="content: none">${message.date}</footer>
-                                                    </blockquote>
-                                                    </div>
-                                                </div>
+                                            <h5><span class="title">${message.author}</span></h5>
+                                            <p>${message.message}</p>
+                                            ${message.date}
                                             `;
                 this._messages.append(messageElement);
+                document.getElementById('message').value = "";
             }
         })
     }
