@@ -2,9 +2,14 @@ let WebSocketServer = new require('ws');
 let clients = {};
 let id = 0;
 
+const PORT = 8081;
+
+console.log('Aplication Started');
+
 let socketServer = new WebSocketServer.Server({
-    port: 8081
+    port: PORT
 });
+console.log(`Listening on port ${PORT}`);
 
 socketServer.on('connection', connection => {
     let clientId = ++id;

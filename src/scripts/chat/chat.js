@@ -8,7 +8,6 @@ export class Chat {
         this._websocket = new WebSocketChat(this.url);
 
         this._createConnection();
-        this._initChat();
 
         document.getElementById('messageButton')
             .addEventListener('click', e => {
@@ -39,6 +38,7 @@ export class Chat {
             nickname: this._nickname,
             onOpen: () => {
                 console.log('Connected succesfull!');
+                this._initChat();
             },
             onMessage: message => {
                 let messageElement = document.createElement('li');
@@ -51,6 +51,9 @@ export class Chat {
                                             `;
                 this._messages.append(messageElement);
                 document.getElementById('message').value = "";
+            },
+            onError : error => {
+                alert('Error Connection');
             }
         })
     }
