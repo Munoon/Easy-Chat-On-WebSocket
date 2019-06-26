@@ -12,6 +12,7 @@ export class Chat {
         this._nickname = nickname;
         this._database = undefined;
         this._userId = undefined;
+        this._activeChanel = undefined;
         this._websocket = new WebSocketChat(this.url);
 
         this._createConnection();
@@ -51,6 +52,13 @@ export class Chat {
         document.querySelectorAll('.chanels-group').forEach(item => {
             item.addEventListener('click', e => {
                 e.preventDefault();
+
+                if (this._activeChanel !== undefined) {
+                    this._activeChanel.classList.remove('active');
+                }
+
+                e.target.classList.add('active');
+                this._activeChanel = e.target;
 
                 let chanelId = e.target.dataset.id;
                 let messages = this._database.getAllChanelMessages(chanelId);
