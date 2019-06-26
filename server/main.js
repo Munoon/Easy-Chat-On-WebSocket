@@ -61,7 +61,10 @@ function socketConnection(connection) {
             case 'deleteMessage':
                 let messageId = jsonMessage.data;
 
-                if (socketServer.messages[clientId].some(message => JSON.parse(message).id != messageId)) {
+                console.log(socketServer.messages[clientId]);
+
+                if (!socketServer.messages[clientId].some(message => JSON.parse(message).id == messageId)) {
+                    console.log('Hacking attempt');
                     return;
                 }
                 

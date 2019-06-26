@@ -78,7 +78,7 @@ export class Chat {
     }
 
     _sendDelete(id) {
-        console.log('Delete id ' + id);
+        console.log('Send delete id ' + id);
         let jsonMessage = JSON.stringify({
             type: 'deleteMessage',
             data: id
@@ -87,7 +87,7 @@ export class Chat {
     }
 
     _newMessage(message) {
-        console.log('Message received ' + message.data);
+        console.log(`Message received (${message.type}) ${message.data}`);
         let messageElement = document.createElement('li');
         messageElement.id = 'message-' + message.id;
         let assignClass = message.authorId === this._userId ? 'left-align' : 'right-align';
