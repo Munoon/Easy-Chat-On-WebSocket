@@ -14,16 +14,22 @@ console.log(`Listening on port ${PORT}`);
 socketServer.on('connection', connection => {
     let clientId = ++id;
     let clientNickname = connection.protocol;
-    clients[clientId] = connection;
     console.log(`${clientNickname} connected and get ID ${clientId}`);
 
-    let connectMessage = JSON.stringify({
-        type: 'connect',
+    let messageForConnected = JSON.stringify({
+        type: 'connected',
         userNickname: clientNickname,
         userId: clientId
-    })
+    });
+    connection.send(messageForConnected);
 
+    let connectMessage = JSON.stringify({
+        type: 'newConnect',
+        userNickname: clientNickname,
+        userId: clientId
+    });
     sendAll(connectMessage);
+    clients[clientId] = connection;
 
     connection.on('message', message => {
         console.log(`Received message from ${clientNickname}: ${message}`);

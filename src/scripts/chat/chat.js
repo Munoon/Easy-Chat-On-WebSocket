@@ -46,11 +46,14 @@ export class Chat {
                     case 'message':
                         this._newMessage(jsonMessage);
                         break;
-                    case 'connect':
-                        this._connected(jsonMessage);
+                    case 'newConnect':
+                        this._newConnect(jsonMessage);
                         break;
                     case 'disconnect':
                         this._disconnect(jsonMessage);
+                        break;
+                    case 'connected':
+                        this._connected(jsonMessage);
                         break;
                 }                            
             },
@@ -63,10 +66,12 @@ export class Chat {
     }
 
     _sendMessage({ message }) {
+        console.log('Message sended ' + message);
         this._websocket.sendMessage(message);
     }
 
     _newMessage(message) {
+        console.log('Message received ' + message.data);
         let messageElement = document.createElement('li');
         let assignClass = message.authorId === this._userId ? 'left-align' : 'right-align';
         messageElement.classList.add('collection-item', assignClass);
@@ -80,13 +85,13 @@ export class Chat {
     }
 
     _connected(message) {
-        if (message.userNickname === this._nickname && this._userId === undefined) {
-            console.log('Received connection confirmation from server')
-            this._initChat();
-            this._userId = message.userId;
-            return;
-        }
+        console.log('Received connection confirmation from server');
+        this._initChat();
+        this._userId = message.userId;
+    }
 
+    _newConnect(message) {
+        console.log(`Connected user ${message.userNickname} (${message.userId})`);
         let messageElement = document.createElement('li');
         messageElement.classList.add('collection-item', 'center-align');
         messageElement.innerHTML = `
@@ -97,6 +102,7 @@ export class Chat {
     }
 
     _disconnect(message) {
+        console.log(`Disconnected user ${message.userNickname} (${message.userId})`);
         let messageElement = document.createElement('li');
         messageElement.classList.add('collection-item', 'center-align');
         messageElement.innerHTML = `
