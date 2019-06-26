@@ -117,6 +117,7 @@ export class Chat {
     _connected(message) {
         console.log('Received connection confirmation from server');
         this._initChat();
+        message.messages.forEach(item => this._newMessage(item));
         this._userId = message.userId;
     }
 

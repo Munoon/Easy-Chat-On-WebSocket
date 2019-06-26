@@ -15,10 +15,19 @@ function socketConnection(connection) {
     console.log(`${clientNickname} connected and get ID ${clientId}`);
     socketServer.messages[clientId] = [];
 
+    let messages = [];
+    for (let user in socketServer.messages) {
+        let list = socketServer.messages[user];
+        if (list.length === 0) continue;
+        
+        list.forEach(message => messages.push(JSON.parse(message)));        
+    }
+
     let messageForConnected = JSON.stringify({
         type: 'connected',
         userNickname: clientNickname,
-        userId: clientId
+        userId: clientId,
+        messages
     });
     connection.send(messageForConnected);
 
@@ -52,8 +61,9 @@ function socketConnection(connection) {
             case 'deleteMessage':
                 let messageId = jsonMessage.data;
 
-                if (socketServer.messages[clientId].some(message => JSON.parse(message).id != messageId))
+                if (socketServer.messages[clientId].some(message => JSON.parse(message).id != messageId)) {
                     return;
+                }
                 
                 socketServer.messages[clientId].filter(message => message.id != messageId);
                 console.log('Deleted message with id ' + messageId);
