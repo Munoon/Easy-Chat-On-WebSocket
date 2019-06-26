@@ -56,10 +56,20 @@ export class Chat {
                 let messages = this._database.getAllChanelMessages(chanelId);
 
                 this._initChat();
-                messages.forEach(item => this._newMessage(item));
+                messages.forEach(item => {
+                    switch (item.type) {
+                        case 'newMessage':
+                            this._newMessage(item);
+                            break;
+                        case 'newConnect':
+                            this._newConnect(item);
+                            break;
+                        case 'disconnect':
+                            this._disconnect(item);
+                            break;
+                    }
+                });
                 this.chanel = chanelId;
-
-                console.log(messages);
             })
         })
     }
