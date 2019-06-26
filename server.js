@@ -17,18 +17,45 @@ socketServer.on('connection', connection => {
     clients[clientId] = connection;
     console.log(`${clientNickname} connected and get ID ${clientId}`);
 
-    connection.on('message', message => {
-        let stringMessage = JSON.parse(message).message;
-        console.log(`Received message: ${stringMessage}`);
+    let connectMessage = JSON.stringify({
+        type: 'connect',
+        userNickname: clientNickname,
+        userId: clientId
+    })
 
-        for (let id in clients) {
-            clients[id].send(message);
-        }
+    sendAll(connectMessage);
+
+    connection.on('message', message => {
+        console.log(`Received message from ${clientNickname}: ${message}`);
+
+        let jsonMessage = JSON.stringify({
+            type: 'message',
+            data: message,
+            author: clientNickname,
+            authorId: clientId,
+            date: new Date()
+        });
+
+        sendAll(jsonMessage);
     });
 
 
     connection.on('close', () => {
         console.log(`User ${clientNickname} with id ${clientId} went offline`);
         delete clients[clientId];
+
+        let closeMessage = JSON.stringify({
+            type: 'disconnect',
+            userId: clientId,
+            userNickname: clientNickname
+        });
+
+        sendAll(closeMessage);        
     });
 });
+
+function sendAll(message) {
+    for (let id in clients) {
+        clients[id].send(message);
+    }
+}
