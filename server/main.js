@@ -1,18 +1,16 @@
-let WebSocketServer = new require('ws');
-let clients = {};
-let id = 0;
+let socket = require('./socketServer.js');
 
 const PORT = 8081;
 
 console.log('Aplication Started');
 
-let socketServer = new WebSocketServer.Server({
-    port: PORT
+let socketServer = new socket.socketServer({
+    port: PORT,
+    onConnection: socketConnection
 });
-console.log(`Listening on port ${PORT}`);
 
-socketServer.on('connection', connection => {
-    let clientId = ++id;
+function socketConnection(connection) {
+    let clientId = ++socketServer.id;
     let clientNickname = connection.protocol;
     console.log(`${clientNickname} connected and get ID ${clientId}`);
 
@@ -28,8 +26,8 @@ socketServer.on('connection', connection => {
         userNickname: clientNickname,
         userId: clientId
     });
-    sendAll(connectMessage);
-    clients[clientId] = connection;
+    socketServer.sendAll(connectMessage);
+    socketServer.clients[clientId] = connection;
 
     connection.on('message', message => {
         console.log(`Received message from ${clientNickname}: ${message}`);
@@ -42,13 +40,13 @@ socketServer.on('connection', connection => {
             date: new Date()
         });
 
-        sendAll(jsonMessage);
+        socketServer.sendAll(jsonMessage);
     });
 
 
     connection.on('close', () => {
         console.log(`User ${clientNickname} with id ${clientId} went offline`);
-        delete clients[clientId];
+        delete socketServer.clients[clientId];
 
         let closeMessage = JSON.stringify({
             type: 'disconnect',
@@ -56,12 +54,6 @@ socketServer.on('connection', connection => {
             userNickname: clientNickname
         });
 
-        sendAll(closeMessage);        
+        socketServer.sendAll(closeMessage);        
     });
-});
-
-function sendAll(message) {
-    for (let id in clients) {
-        clients[id].send(message);
-    }
 }

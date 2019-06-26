@@ -13,3 +13,7 @@ nav {
     top: 30%;
     transform: scaleX(1) scaleY(1);
 }
+
+left-border {
+    color: black;
+}
