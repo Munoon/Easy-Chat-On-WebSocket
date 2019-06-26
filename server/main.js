@@ -1,5 +1,6 @@
 let socket = require('./socketServer.js');
 let db = require('./database');
+let chanel = require('./chanel.js');
 
 const PORT = 8081;
 
@@ -11,6 +12,10 @@ let socketServer = new socket.SocketServer({
 });
 
 let database = new db.Database();
+
+let globalChanel = new chanel.Chanel('global', ++database.chanelId);
+
+database.addChanel(globalChanel);
 
 function socketConnection(connection) {
     let clientId = ++database.userId;
@@ -39,29 +44,30 @@ function socketConnection(connection) {
         
         switch (jsonMessage.type) {
             case 'sendMessage':
-                console.log(`Received message from ${clientNickname}: ${jsonMessage.data}`);
+                console.log(`Received message from ${clientNickname} (chanel ${jsonMessage.chanel}): ${jsonMessage.data}`);
 
                 let messageData = JSON.stringify({
                     type: 'newMessage',
                     data: jsonMessage.data,
                     author: clientNickname,
                     authorId: clientId,
-                    id: ++database.messageId,
+                    id: ++database.getChanelById(jsonMessage.chanel).messageId,
                     date: new Date()
                 });
 
-                database.addMessage(clientId, messageData);
+                // database.addMessage(clientId, messageData);
+                database.getChanelById(jsonMessage.chanel).addMessage(clientId, messageData);
                 socketServer.sendAll(messageData, database.users);
                 break;
             case 'deleteMessage':
                 let messageId = jsonMessage.data;
 
-                if (database.checkForClientMessage(clientId, jsonMessage)) {
+                if (database.getChanelById(jsonMessage.chanel).checkForClientMessage(clientId, jsonMessage)) {
                     console.log('Hacking attempt');
                     return;
                 }
                 
-                database.removeClientMessage(clientId, messageId);
+                database.getChanelById(jsonMessage.chanel).removeClientMessage(clientId, messageId);
                 console.log('Deleted message with id ' + messageId);
 
                 let deleteMessageData = JSON.stringify({

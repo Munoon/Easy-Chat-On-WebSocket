@@ -5,6 +5,7 @@ export class Chat {
     constructor({ element, url, nickname }) {
         this.element = element;
         this.url = url;
+        this.chanel = 1;
         this._nickname = nickname;
         this._userId = undefined;
         this._websocket = new WebSocketChat(this.url);
@@ -72,6 +73,7 @@ export class Chat {
         console.log('Message sended ' + message);
         let jsonMessage = JSON.stringify({
             type: 'sendMessage',
+            chanel: this.chanel,
             data: message
         });
         this._websocket.sendMessage(jsonMessage);
@@ -81,6 +83,7 @@ export class Chat {
         console.log('Send delete id ' + id);
         let jsonMessage = JSON.stringify({
             type: 'deleteMessage',
+            chanel: this.chanel,
             data: id
         });
         this._websocket.sendMessage(jsonMessage);
@@ -117,8 +120,7 @@ export class Chat {
     _connected(message) {
         console.log('Received connection confirmation from server');
         this._initChat();
-        console.log(message)
-        message.messages.forEach(item => this._newMessage(item));
+        message.messages[1].forEach(item => this._newMessage(item));
         this._userId = message.userId;
     }
 

@@ -1,51 +1,44 @@
 class Database {
     constructor() {
         this.userId = 0;
-        this.messageId = 0;
-
         this.users = {};
-        this._messages = {};
+
+        this.chanelId = 0;
+        this.chanels = {};
     }
 
     createClient(clientId, connection) {
         this.users[clientId] = connection;
     }
 
-    createClientMessages(client) {
-        this._messages[client] = [];
+    removeClient(clientId) {
+        delete this.users[clientId];
     }
 
-    getAllMessagesFromClient(client) {
-        return this._messages[client];
+    createClientMessages(client) {
+        for (let chanel in this.chanels) {
+            this.chanels[chanel].createClientMessages(client);
+        }
+    }
+
+    addChanel(chanel) {
+        this.chanels[chanel.id] = chanel;
+    }
+
+    removeChanel(chanel) {
+        delete this.chanels[chanel.id];
+    }
+
+    getChanelById(id) {
+        return this.chanels[id];
     }
 
     getAllMessages() {
-        let arr = [];
-        for (let user in this._messages) {
-            arr.push(this._messages[user]);
+        let arr = {};
+        for (let chanel in this.chanels) {
+            arr[chanel] = this.chanels[chanel].getAllMessages();
         }
-        arr = arr.reduce((acc, val) => acc.concat(val), []);
-        arr = arr.filter(item => item !== null)
-        return arr.map(str => JSON.parse(str));
-    }
-
-    addMessage(client, message) {
-        this._messages[client].push(message);
-    }
-
-    checkForClientMessage(clientId, message) {
-        this._messages[clientId].some(msg => JSON.parse(msg).id == message.data);
-    }
-
-    removeClientMessage(client, messageId) {
-        this._messages[client].forEach((item, index) => {
-            if (JSON.parse(item).id == messageId)
-                delete this._messages[client][index];
-        })
-    }
-
-    removeClient(clientId) {
-        delete this.users[clientId];
+        return arr;
     }
 }
 
