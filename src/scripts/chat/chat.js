@@ -1,5 +1,5 @@
 import { WebSocketChat } from "./websocket.js";
-import { formatDate } from "./dateUtil.js";
+import { formatDate } from "../dateUtil.js";
 
 export class Chat {
     constructor({ element, url, nickname }) {
