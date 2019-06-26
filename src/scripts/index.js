@@ -6,7 +6,8 @@ import { SettingsPoput } from "./askSettings.js";
 
 function settings({ nickname, url }) {
     new Chat({
-        element: document.getElementById('chatApp'),
+        chat: document.getElementById('chatApp'),
+        chanelsMenu: document.getElementById('chanelsMenu'),
         url,
         nickname
     });

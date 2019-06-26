@@ -40,6 +40,14 @@ class Database {
         }
         return arr;
     }
+
+    getAllChanels() {
+        let arr = {};
+        for (let chanelId in this.chanels) {
+            arr[chanelId] = this.chanels[chanelId].name;
+        }
+        return arr;
+    }
 }
 
 exports.Database = Database;

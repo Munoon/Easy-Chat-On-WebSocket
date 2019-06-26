@@ -1,12 +1,16 @@
 import { WebSocketChat } from "./websocket.js";
 import { formatDate } from "../dateUtil.js";
+import { Database } from "./localDatabase.js";
+import { throws } from "assert";
 
 export class Chat {
-    constructor({ element, url, nickname }) {
-        this.element = element;
+    constructor({ chat, chanelsMenu, url, nickname }) {
+        this.chat = chat;
+        this.chanelsMenu = chanelsMenu;
         this.url = url;
         this.chanel = 1;
         this._nickname = nickname;
+        this._database = undefined;
         this._userId = undefined;
         this._websocket = new WebSocketChat(this.url);
 
@@ -14,9 +18,9 @@ export class Chat {
     }
 
     _initChat() {
-        this.element.innerHTML = `
+        this.chat.innerHTML = `
                                     <div class="container">
-                                        <ul id="messages" class="collection"></ul>
+                                        <ul id="messages" class="collection" hidden></ul>
 
                                         <div class="row">
                                             <div class="input-field col s6">
@@ -34,6 +38,32 @@ export class Chat {
         this._messages = document.getElementById('messages');
     }
 
+    _initChanels(chanels) {
+        for (let id in chanels) {
+            let name = chanels[id];
+            let element = document.createElement('a');
+            element.classList.add('collection-item', 'chanels-group');
+            element.textContent = name;
+            element.dataset.id = id;
+            this.chanelsMenu.append(element);
+        }
+
+        document.querySelectorAll('.chanels-group').forEach(item => {
+            item.addEventListener('click', e => {
+                e.preventDefault();
+
+                let chanelId = e.target.dataset.id;
+                let messages = this._database.getAllChanelMessages(chanelId);
+
+                this._initChat();
+                messages.forEach(item => this._newMessage(item));
+                this.chanel = chanelId;
+
+                console.log(messages);
+            })
+        })
+    }
+
     _createConnection() {
         this._websocket.connect({
             nickname: this._nickname,
@@ -46,6 +76,7 @@ export class Chat {
                 switch (jsonMessage.type) {
                     case 'newMessage':
                         this._newMessage(jsonMessage);
+                        this._database.addMessage(this.chanel, jsonMessage);
                         break;
                     case 'newConnect':
                         this._newConnect(jsonMessage);
@@ -91,6 +122,8 @@ export class Chat {
 
     _newMessage(message) {
         console.log(`Message received (${message.type}) ${message.data}`);
+        this.chat.children[0].children[0].hidden = false;
+        this.chat.children[0].hidden = false;
         let messageElement = document.createElement('li');
         messageElement.id = 'message-' + message.id;
         let assignClass = message.authorId === this._userId ? 'left-align' : 'right-align';
@@ -107,6 +140,7 @@ export class Chat {
     }
 
     _deleteMessage(messageId) {
+        this._database.deleteMessage(this.chanel, messageId);
         let childrens = this._messages.children;
         for (let i = 0; i < childrens.length; i++) {
             let message = childrens[i];
@@ -120,12 +154,16 @@ export class Chat {
     _connected(message) {
         console.log('Received connection confirmation from server');
         this._initChat();
+        this._initChanels(message.chanels);
+        document.querySelector('.row').hidden = false;
         message.messages[1].forEach(item => this._newMessage(item));
         this._userId = message.userId;
+        this._database = new Database(message.chanels, message.messages);
     }
 
     _newConnect(message) {
         console.log(`Connected user ${message.userNickname} (${message.userId})`);
+        this._database.addMessage(1, message);
         let messageElement = document.createElement('li');
         messageElement.classList.add('collection-item', 'center-align');
         messageElement.innerHTML = `
@@ -137,6 +175,7 @@ export class Chat {
 
     _disconnect(message) {
         console.log(`Disconnected user ${message.userNickname} (${message.userId})`);
+        this._database.addMessage(1, message);
         let messageElement = document.createElement('li');
         messageElement.classList.add('collection-item', 'center-align');
         messageElement.innerHTML = `

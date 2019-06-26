@@ -14,8 +14,10 @@ let socketServer = new socket.SocketServer({
 let database = new db.Database();
 
 let globalChanel = new chanel.Chanel('global', ++database.chanelId);
+let secondChanel = new chanel.Chanel('second', ++database.chanelId);
 
 database.addChanel(globalChanel);
+database.addChanel(secondChanel);
 
 function socketConnection(connection) {
     let clientId = ++database.userId;
@@ -27,7 +29,8 @@ function socketConnection(connection) {
         type: 'connected',
         userNickname: clientNickname,
         userId: clientId,
-        messages: database.getAllMessages()
+        messages: database.getAllMessages(),
+        chanels: database.getAllChanels()
     });
     connection.send(messageForConnected, database.users);
 
