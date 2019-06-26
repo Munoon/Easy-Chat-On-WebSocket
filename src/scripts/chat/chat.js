@@ -43,7 +43,7 @@ export class Chat {
                 let jsonMessage = JSON.parse(message);
 
                 switch (jsonMessage.type) {
-                    case 'message':
+                    case 'newMessage':
                         this._newMessage(jsonMessage);
                         break;
                     case 'newConnect':
@@ -54,6 +54,9 @@ export class Chat {
                         break;
                     case 'connected':
                         this._connected(jsonMessage);
+                        break;
+                    case 'deleteMessage':
+                        this._deleteMessage(jsonMessage.data);
                         break;
                 }                            
             },
@@ -67,21 +70,48 @@ export class Chat {
 
     _sendMessage({ message }) {
         console.log('Message sended ' + message);
-        this._websocket.sendMessage(message);
+        let jsonMessage = JSON.stringify({
+            type: 'sendMessage',
+            data: message
+        });
+        this._websocket.sendMessage(jsonMessage);
+    }
+
+    _sendDelete(id) {
+        console.log('Delete id ' + id);
+        let jsonMessage = JSON.stringify({
+            type: 'deleteMessage',
+            data: id
+        });
+        this._websocket.sendMessage(jsonMessage);
     }
 
     _newMessage(message) {
         console.log('Message received ' + message.data);
         let messageElement = document.createElement('li');
+        messageElement.id = 'message-' + message.id;
         let assignClass = message.authorId === this._userId ? 'left-align' : 'right-align';
         messageElement.classList.add('collection-item', assignClass);
         messageElement.innerHTML = `
                                     <h5><span class="title" style="color: blue">${message.author}</span></h5>
                                     <p>${message.data}</p>
                                     ${formatDate(message.date)}
+                                    ${message.authorId === this._userId ? `<a data-id="${message.id}" class="waves-effect waves-light btn delete-message">Delete</a>` : ""}
                                     `;
         this._messages.append(messageElement);
+        if (message.authorId === this._userId) this._refreshDeleteButtons();
         document.getElementById('message').value = "";   
+    }
+
+    _deleteMessage(messageId) {
+        let childrens = this._messages.children;
+        for (let i = 0; i < childrens.length; i++) {
+            let message = childrens[i];
+            if (message.id == 'message-' + messageId) {
+                this._messages.removeChild(message);
+                console.log('Deleted message with id '+ messageId);
+            }
+        }
     }
 
     _connected(message) {
@@ -109,5 +139,14 @@ export class Chat {
                                     <h5>User <span class="title" style="color: blue">${message.userNickname}</span> disconnected</h5>
                                     `;
         this._messages.append(messageElement);
+    }
+
+    _refreshDeleteButtons() {
+        document.querySelectorAll('.delete-message').forEach(item => {
+            item.addEventListener('click', e => {
+                let id = e.target.dataset.id;
+                this._sendDelete(id);
+            })
+        })
     }
 }
